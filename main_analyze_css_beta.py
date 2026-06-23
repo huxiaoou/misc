@@ -74,6 +74,7 @@ def main():
     nav_df = load_nav(bgn, end)
     css_df = load_css()
     merged_df = pd.merge(nav_df, css_df, left_index=True, right_index=True, how="left")
+    merged_df[indicator] = 1 - merged_df[indicator]
     merged_df[plot_indicator] = merged_df[indicator].rolling(window=window).mean()
     print(merged_df)
     save(merged_df, f"data/merged_nav_css_{indicator}_MA{window}_{bgn}_{end}.csv")
