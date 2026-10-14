@@ -1,10 +1,13 @@
 from PIL import Image
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def main():
 
     # 1. Open the original image
-    original = Image.open("data/input_file.png")
+    original = Image.open(DATA_DIR / "input_file.png")
 
     # 2. Define the region to copy (left, upper, right, lower)
     # Example: a 400x400 square starting from the top-left
@@ -15,7 +18,7 @@ def main():
 
     # 4. Save as a new PNG
     # PNGs support transparency, which crop() will preserve automatically
-    cropped_image.save("data/extracted_part.png")
+    cropped_image.save(DATA_DIR / "extracted_part.png")
 
     print("New image saved successfully!")
 

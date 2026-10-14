@@ -1,6 +1,9 @@
 import pandas as pd
 import argparse
 from husfort.qplot import CPlotLinesWithBars
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 pd.set_option("display.float_format", "{:.6f}".format)
 
@@ -8,7 +11,7 @@ pd.set_option("display.float_format", "{:.6f}".format)
 def load_nav(
     bgn: str,
     end: str,
-    src_file: str = "data/rets_ALL.csim.main.csv",
+    src_file: str | Path = DATA_DIR / "rets_ALL.csim.main.csv",
     ret: str = "open",
 ) -> pd.DataFrame:
     ret_df = pd.read_csv(src_file)
@@ -16,14 +19,14 @@ def load_nav(
     return ret_df[["trade_date", "nav"]].set_index("trade_date").truncate(before=bgn, after=end)
 
 
-def load_css(src_file: str = "data/css.csv") -> pd.DataFrame:
+def load_css(src_file: str | Path = DATA_DIR / "css.csv") -> pd.DataFrame:
     css_df = pd.read_csv(src_file, parse_dates=["datetime"])
     css_df["trade_date"] = css_df["datetime"].map(lambda x: x.strftime("%Y-%m-%d"))
     css_df = css_df.pivot_table(index="trade_date", columns="code", values="val", aggfunc="mean")
     return css_df
 
 
-def save(data: pd.DataFrame, filename: str):
+def save(data: pd.DataFrame, filename: str | Path):
     data.to_csv(filename, float_format="%.6f")
     return
 
@@ -38,7 +41,7 @@ def plot(data: pd.DataFrame, plot_indicator: str, sec_ylim: tuple[float, float],
         bar_width=0.5,
         align="center",
         fig_name=f"nav_vs_{plot_indicator}_{bgn}_{end}",
-        fig_save_dir="data",
+        fig_save_dir=str(DATA_DIR),
     )
     artist.plot()
     artist.set_axis_x(xtick_count=min(20, len(data)), xtick_label_rotation=90, xgrid_visible=True)
@@ -77,7 +80,7 @@ def main():
     merged_df[indicator] = 1 - merged_df[indicator]
     merged_df[plot_indicator] = merged_df[indicator].rolling(window=window).mean()
     print(merged_df)
-    save(merged_df, f"data/merged_nav_css_{indicator}_MA{window}_{bgn}_{end}.csv")
+    save(merged_df, DATA_DIR / f"merged_nav_css_{indicator}_MA{window}_{bgn}_{end}.csv")
     plot(merged_df, plot_indicator, sec_ylim=sec_ylim, bgn=bgn, end=end)
 
 

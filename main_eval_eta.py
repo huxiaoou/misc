@@ -1,16 +1,19 @@
 import pandas as pd
 import argparse
 from husfort.qplot import CPlotLinesWithBars
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
-def load_css(css_file: str) -> pd.DataFrame:
+def load_css(css_file: str | Path) -> pd.DataFrame:
     css_data = pd.read_csv(css_file, parse_dates=["datetime"])
     css_data["trade_date"] = css_data["datetime"].dt.strftime("%Y%m%d")
     pivot_css_data = pd.pivot_table(css_data, index="trade_date", columns="code", values="val")
     return pivot_css_data
 
 
-def load_eta_ret(eta_ret_file: str) -> pd.DataFrame:
+def load_eta_ret(eta_ret_file: str | Path) -> pd.DataFrame:
     eta_ret_data = pd.read_csv(eta_ret_file, parse_dates=["trade_date"])
     eta_ret_data["trade_date"] = eta_ret_data["trade_date"].dt.strftime("%Y%m%d")
     eta_ret_data = eta_ret_data.set_index("trade_date").rename(columns={"open": "ret"})
@@ -35,7 +38,7 @@ def plot_indicator(data: pd.DataFrame, indicator: str, nav: str = "nav"):
         line_color=["#FF6347"],
         bar_color=["#6495ED"],
         fig_name=f"eta.{nav}-vs-{indicator}",
-        fig_save_dir="data",
+        fig_save_dir=str(DATA_DIR),
     )
     artist.plot()
     artist.set_axis_x(xtick_spread=21, xtick_label_rotation=90, xgrid_visible=True)
@@ -69,11 +72,11 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    css_file = "data/css.csv"
+    css_file = DATA_DIR / "css.csv"
     css_data = load_css(css_file)
     print(css_data)
 
-    eta_ret_file = "data/rets_ALL.csim.main.eta.csv"
+    eta_ret_file = DATA_DIR / "rets_ALL.csim.main.eta.csv"
     eta_ret_data = load_eta_ret(eta_ret_file)
     print(eta_ret_data)
 

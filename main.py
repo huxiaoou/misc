@@ -4,6 +4,9 @@ import argparse
 from husfort.qevaluation import CNAV
 from husfort.qplot import CPlotLines
 from pyparsing import col
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def parse_args():
@@ -16,9 +19,9 @@ if __name__ == "__main__":
     args = parse_args()
 
     if args.func == "nav":
-        data_src: dict[str, str] = {
-            "beta": "rets_ALL.main.beta.csv",
-            "gamma": "rets_ALL.main.gamma.csv",
+        data_src: dict[str, Path] = {
+            "beta": DATA_DIR / "rets_ALL.main.beta.csv",
+            "gamma": DATA_DIR / "rets_ALL.main.gamma.csv",
         }
 
         data_b = pd.read_csv(data_src["beta"]).set_index("trade_date")
@@ -46,7 +49,7 @@ if __name__ == "__main__":
         artist = CPlotLines(
             plot_data=nav,
             fig_name="nav_comb",
-            fig_save_dir=".",
+            fig_save_dir=str(DATA_DIR),
             line_width=1.0,
             line_style=["-.", "-.", "-"],
             line_color=["#696969", "#1E90FF", "#800000"],
@@ -62,9 +65,9 @@ if __name__ == "__main__":
         exchange_old, exchange_new = ".SHF", "_SHFE"
 
         n0, n1 = f"mtm{w0}", f"mtm{w1}"
-        data_src: dict[str, str] = {
-            "tq": f"md.{instrument}.tq.csv",
-            "ts": f"md.{instrument}.ts.csv",
+        data_src: dict[str, Path] = {
+            "tq": DATA_DIR / f"md.{instrument}.tq.csv",
+            "ts": DATA_DIR / f"md.{instrument}.ts.csv",
         }
 
         data_tq = pd.read_csv(data_src["tq"], parse_dates=["datetime"])
@@ -110,7 +113,7 @@ if __name__ == "__main__":
         )
         print(result)
         breakpoint()
-        result.to_csv(f"md.{instrument}.ts_tq.{bgn}.{end}.csv", float_format="%.6f")
+        result.to_csv(DATA_DIR / f"md.{instrument}.ts_tq.{bgn}.{end}.csv", float_format="%.6f")
 
         diff_data = result.query("real_code_tq != real_code_ts")
         print(f"{'diff':-^60s}")

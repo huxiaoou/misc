@@ -2,8 +2,9 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from matplotlib.ticker import MaxNLocator
     import pandas as pd
+    from pathlib import Path
 
-    src_file = "data/pre_opn_ret.csv"
+    src_file = Path(__file__).resolve().parent / "data" / "pre_opn_ret.csv"
     src_data = pd.read_csv(src_file, index_col=0).fillna(0)
 
     ret_data = pd.pivot_table(src_data, index="datetime", columns="code", values="pre_opn_ret_major")

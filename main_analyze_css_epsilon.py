@@ -5,24 +5,27 @@ from matplotlib.pylab import f
 import pandas as pd
 import argparse
 from husfort.qplot import CPlotLinesWithBars
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 pd.set_option("display.float_format", "{:.6f}".format)
 
 
-def load_nav(src_file: str = "rets_ALL.main.epsilon.csv", ret: str = "open") -> pd.DataFrame:
+def load_nav(src_file: str | Path = DATA_DIR / "rets_ALL.main.epsilon.csv", ret: str = "open") -> pd.DataFrame:
     ret_df = pd.read_csv(src_file)
     ret_df["nav"] = ret_df[ret].cumsum()
     return ret_df[["trade_date", "nav"]].set_index("trade_date")
 
 
-def load_css(src_file: str = "css.csv") -> pd.DataFrame:
+def load_css(src_file: str | Path = DATA_DIR / "css.csv") -> pd.DataFrame:
     css_df = pd.read_csv(src_file, parse_dates=["datetime"])
     css_df["trade_date"] = css_df["datetime"].map(lambda x: x.strftime("%Y-%m-%d"))
     css_df = css_df.pivot_table(index="trade_date", columns="code", values="val", aggfunc="mean")
     return css_df
 
 
-def save(data: pd.DataFrame, filename: str):
+def save(data: pd.DataFrame, filename: str | Path):
     data.to_csv(filename, float_format="%.6f")
     return
 
@@ -35,7 +38,7 @@ def plot(data: pd.DataFrame, plot_indicator: str, ylim: tuple[float, float]):
         line_color=["#8B0000"],
         bar_alpha=0.5,
         fig_name=f"sector_timing_vs_{plot_indicator}",
-        fig_save_dir="data",
+        fig_save_dir=str(DATA_DIR),
     )
     artist.plot()
     artist.set_axis_x(xtick_spread=42, xtick_label_rotation=90, xgrid_visible=True)
@@ -68,7 +71,7 @@ def main():
     merged_df = pd.merge(nav_df, css_df, left_index=True, right_index=True, how="left")
     merged_df[plot_indicator] = merged_df[indicator].rolling(window=window).mean()
     print(merged_df.head(20))
-    save(merged_df, f"merged_nav_css_{indicator}_MA{window}.csv")
+    save(merged_df, DATA_DIR / f"merged_nav_css_{indicator}_MA{window}.csv")
     plot(merged_df, plot_indicator, ylim=(lylim, rylim))
 
 
